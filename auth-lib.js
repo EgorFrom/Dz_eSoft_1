@@ -143,15 +143,23 @@ class User {
 			throw new Error("Неккоректные входные данные");
 		}
 	};
-
+	function forUserGroups(user) {
+		
+	}
 	function userGroups(user) {
-		if (user == "null" | allUsers.length == 0 | allUsers.indexOf(user) < 0)
+		if (user == "null" | allUsers.length == 0)
 			throw new Error("Ошибка пользователя");
 		else
 		{
-			var i = allUsers.indexOf(user);
-			var obj = allUsers[i];
-			if (i > -1 & obj.groups != "null")
+			var obj;
+			users().forEach(function(u){
+				if (u.nickname == user)
+				{
+					obj = u;
+					return;
+				}
+			});
+			if (obj.groups != "null")
 			{
 				return obj.groups;
 			}
@@ -163,9 +171,15 @@ class User {
 			throw new Error("Ошибка пользователя");
 		else
 		{
-			var i = allUsers.indexOf(user);
-			var obj = allUsers[i];
-			if (i > -1 & obj.groups != "null")
+			var obj;
+			users().forEach(function(u){
+				if (u.nickname == user)
+				{
+					obj = u;
+					return;
+				}
+			});
+			if (obj.groups != "null")
 				if (obj.groups.length != 0 & obj.groups.indexOf(group) > -1)
 				{
 					obj.groups.splice(obj.groups.indexOf(group), 1);
@@ -198,16 +212,28 @@ class User {
 	};
 
 	function groupRights(group) {
-		if (group != "null"){
-			if (group == "admin")
-				return allGroups.admin;
-			if (group == "manager")
-				return allGroups.manager;
-			if (group == "basic")
-				return allGroups.basic;
-		} else 
+		var groupRights = [];
+		var keysArrayGroup = Object.keys(allGroups);
+		if (keysArrayGroup.indexOf(group) < 0)
 			throw new Error("Ошибка входных данных");
-		return [];
+		else
+		{
+			// allGroups[group].forEach(function(right){
+			// 	groupRights.push(right);
+			// });
+			groupRights = groupRights.concat(allGroups[group]);
+		}
+		return groupRights;
+		// if (group != "null"){
+		// 	if (group == "admin")
+		// 		return allGroups.admin;
+		// 	if (group == "manager")
+		// 		return allGroups.manager;
+		// 	if (group == "basic")
+		// 		return allGroups.basic;
+		// } else 
+		// 	throw new Error("Ошибка входных данных");
+		// return [];
 	};
 
 	function rights() {return allRights;};
@@ -241,6 +267,18 @@ class User {
 			throw new Error("Ошибка входных данных");
 	};
 
+	function userRights(user) {
+		var userRights = [];
+		var arrayGroups = userGroups(user);
+
+		var arrayRights = [];
+		arrayGroups.forEach(function(group){
+			userRights = userRights.concat(groupRights(group));
+		});
+
+		return userRights;
+	}
+
 	var Session = null;
 
 	function login(username, password) {
@@ -262,7 +300,7 @@ class User {
 	};
 
 	function isAuthorized(user, right) {
-		Session.groups.forEach(function(group){
-			var i = Object.keys(allGroups).indexOf(group);
-		})
+		if (userRights(user).indexOf(right) > -1) 
+			return true;
+		else return false;
 	};
