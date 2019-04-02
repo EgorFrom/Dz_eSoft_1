@@ -20,6 +20,15 @@ class User {
 		"manager": [allRights[0]],
 		"basic": [allRights[1], allRights[3]]
 	}
+	function ExistUser(user) {
+		ExistingFlag = false;
+		users().forEach(function(e){
+				if (e.nickname == user.nickname)
+					ExistingFlag = true;
+			});
+		return ExistingFlag;
+	}
+
 	function UpdateUser(user){
 		user.groups.forEach(function(elem){
 			if (Object.keys(allGroups).indexOf(elem) < 0)
@@ -35,6 +44,10 @@ class User {
 	function createUser(username, pass) {
 		if (typeof(username) == "string" & typeof(pass) == "string")
 		{
+			users().forEach(function(e){
+				if (e.nickname == username)
+					throw new Error("Пользователь с таким именем уже существует");
+			});
 			var s = allUsers.push(new User(username,pass,["basic"]));
 			return allUsers[s-1];
 		}
@@ -93,104 +106,145 @@ class User {
 	};
 
 	function subAddUserToGroup(user, group){
-		try {
-			if (user == "null" | allUsers.length == 0)
-				throw new Error("Ошибка пользователя");
-			else
+		if (user == "null" | allUsers.length == 0)
+			throw new Error("Ошибка пользователя");
+		else
+		{
+			if (groups().indexOf(group) < 0)
+				throw new Error("Ошибка группы");
+
+			let flag = false; // false - string, true - object
+			if (typeof(user) === "string")
+				flag = false;
+			else 
+				flag = true;
+			var i = 0;
+			var obj = null;
+			if (flag){
+				users().forEach(function(u){
+					i++;
+					if (u == user)
+					{
+						obj = u;
+						return;
+					}
+					if (obj != null) return;
+				});
+			} else {
+				users().forEach(function(u){
+					i++;
+					if (u.nickname == user)
+					{
+						obj = u;
+						return;
+					}
+					if (obj != null) return;
+				});
+			}
+			if (i > -1 & obj.groups != "null")
 			{
-				var i = allUsers.indexOf(user);
-				var obj = allUsers[i];
-				if (i > -1 & obj.groups != "null")
-				{
-					if (obj.groups.length != 0 & obj.groups.indexOf(group) > -1)
-						{ throw new Error("Юзер уже в группе"); return false;}
-					else { 
-						if (Array.isArray(group))
-							group.forEach(function(element){
-								obj.groups.push(element);
-								allUsers.push(obj);
-								allUsers.splice(i, 1);
-							});
-						else{
-							obj.groups.push(group);
+				if (obj.groups.length != 0 & obj.groups.indexOf(group) > -1)
+					{ throw new Error("Юзер уже в группе"); return false;}
+				else { 
+					if (Array.isArray(group))
+						group.forEach(function(element){
+							obj.groups.push(element);
 							allUsers.push(obj);
 							allUsers.splice(i, 1);
-						}
-						return true;
+						});
+					else{
+						obj.groups.push(group);
+						allUsers.push(obj);
+						allUsers.splice(i, 1);
 					}
-				} else {
-					throw new Error("Жопа");
+					return true;
 				}
-			}
-		} catch {
-			throw new Error("try/catch");
+			} 
 		}
 	}
 
 	function addUserToGroup(user, group) {
 		try {
-			if (user == "null" | group == "null")
+			if (user == null | group == null)
 				throw new Error("Неккоректные входные данные");
 			if (Array.isArray(user)){
-				user.forEach(function(user)
+				user.forEach(function(us)
 				{
-					subAddUserToGroup(user, group);
+					subAddUserToGroup(us, group);
 				});
 			}else {
 				subAddUserToGroup(user, group);
 			}
 		} catch {
-			throw new Error("Неккоректные входные данные");
+			throw new Error("Ошибка, неккоректные входные данные");
 		}
 	};
-	function forUserGroups(user) {
-		
-	}
+
 	function userGroups(user) {
-		if (user == "null" | allUsers.length == 0)
-			throw new Error("Ошибка пользователя");
-		else
-		{
-			var obj;
-			users().forEach(function(u){
-				if (u.nickname == user)
-				{
-					obj = u;
-					return;
-				}
-			});
-			if (obj.groups != "null")
+		if (typeof(user) == "object" & user.groups != "null" & ExistUser(user))
+			return user.groups;
+		else if (typeof(user) == "string") {
+			if (user == "null" | allUsers.length == 0)
+				throw new Error("Ошибка пользователя");
+			else
 			{
-				return obj.groups;
+				var obj;
+				users().forEach(function(u){
+					if (u.nickname == user)
+					{
+						obj = u;
+						return;
+					}
+				});
+				if (obj.groups != "null")
+				{
+					return obj.groups;
+				}
 			}
 		}
 	};
 
 	function removeUserFromGroup(user, group) {
-		if (user == "null" | allUsers.length == 0)
-			throw new Error("Ошибка пользователя");
-		else
-		{
-			var obj;
-			users().forEach(function(u){
-				if (u.nickname == user)
-				{
-					obj = u;
-					return;
+			if (user == "null" | allUsers.length == 0)
+				throw new Error("Ошибка пользователя");
+			else
+			{
+				let flag = false; // false - string, true - object
+				let obj;
+				try {
+					if (typeof(user) === "string")
+					{
+						users().forEach(function(u){
+							if (u.nickname == user)
+							{
+								obj = u;
+								return;
+							}
+						});
+					} else {
+						users().forEach(function(u){
+							if (u == user)
+							{
+								obj = u;
+								return;
+							}
+						});
+					}
+				} catch {
+					throw new Error("Ошибка введенного пользователя");
 				}
-			});
-			if (obj.groups != "null")
-				if (obj.groups.length != 0 & obj.groups.indexOf(group) > -1)
-				{
-					obj.groups.splice(obj.groups.indexOf(group), 1);
+				if (obj.groups != "null")
+					if (obj.groups.length != 0 & obj.groups.indexOf(group) > -1)
+					{
+						obj.groups.splice(obj.groups.indexOf(group), 1);
+					}
+					else { 
+						throw new Error("Уже удален из группы");
+					}
+				else {
+					throw new Error("Ошибка группы");
 				}
-				else { 
-					throw new Error("Уже удален из группы");
-				}
-			else {
-				throw new Error("Ошибка группы");
 			}
-		}
 	};
 
 	function createRight() {
@@ -224,16 +278,6 @@ class User {
 			groupRights = groupRights.concat(allGroups[group]);
 		}
 		return groupRights;
-		// if (group != "null"){
-		// 	if (group == "admin")
-		// 		return allGroups.admin;
-		// 	if (group == "manager")
-		// 		return allGroups.manager;
-		// 	if (group == "basic")
-		// 		return allGroups.basic;
-		// } else 
-		// 	throw new Error("Ошибка входных данных");
-		// return [];
 	};
 
 	function rights() {return allRights;};
@@ -243,7 +287,7 @@ class User {
 		{
 			right.forEach(function(right)
 			{
-				if (right != "null" & allRights.indexOf(right) > -1 & (group != 'null'))
+				if (allRights.indexOf(right) > -1)
 					if (allGroups[group].indexOf(right) < 0)
 						allGroups[group].push(right);
 					else throw new Error("Право уже есть");
@@ -251,7 +295,7 @@ class User {
 					throw new Error("Ошибка входных данных");
 			}	);
 		} else {
-			if (right != "null" & allRights.indexOf(right) > -1 & (group != 'null'))
+			if (allRights.indexOf(right) > -1)
 				if (allGroups[group].indexOf(right) < 0)
 					allGroups[group].push(right);
 				else throw new Error("Право уже есть");
@@ -261,8 +305,9 @@ class User {
 	};
 
 	function removeRightFromGroup(right, group) {
-		if (right != "null" & allRights.indexOf(right) > -1 & allGroups[group].indexOf(right) > -1)
-			allGroups[group].splice(allGroups[group].indexOf(right),1);
+		let i = allGroups[group].indexOf(right);
+		if (allRights.indexOf(right) > -1 & i > -1)
+			allGroups[group].splice(i,1);
 		else 
 			throw new Error("Ошибка входных данных");
 	};
@@ -273,34 +318,55 @@ class User {
 
 		var arrayRights = [];
 		arrayGroups.forEach(function(group){
-			userRights = userRights.concat(groupRights(group));
+			groupRights(group).forEach(function(right){
+				if (userRights.indexOf(right) < 0)
+					userRights.push(right);
+			});
+//			userRights = userRights.concat();
 		});
 
 		return userRights;
 	}
 
-	var Session = null;
+	var AuthorizedFlag = false;
+	var CurrentUser = new User();
 
 	function login(username, password) {
-		allUsers.forEach(function(user){
-			if (user.nickname == username & user.password == password & Session == null)
-			{
-				Session = user;
-				return true;
-			} else return false;
+		let flag = false;
+		users().forEach(function(user){
+			if (!flag)
+				if (user.nickname == username & user.password == password & AuthorizedFlag == false)
+				{
+					CurrentUser = user;
+					flag = true;
+					AuthorizedFlag = true;
+					return;
+				} else flag = false;
 		});
+		return flag;
 	};
 
 	function currentUser() {
-		return Session.nickname;
+		if (AuthorizedFlag)
+			return CurrentUser;
 	};
 
 	function logout() {
-		Session = null;
+		CurrentUser = new User();
+		AuthorizedFlag = false;
 	};
 
 	function isAuthorized(user, right) {
-		if (userRights(user).indexOf(right) > -1) 
-			return true;
-		else return false;
+			try {
+				if (user == null | right == null | allUsers.length == 0 | allRights.indexOf(right) < 0)
+					throw new Error("Ошибка пользователя");
+				else
+				{
+					if (userRights(user).indexOf(right) > -1) 
+						return true;
+					else return false;
+				}
+			} catch{
+				throw new Error("Ошибка входных данных");
+			}
 	};
