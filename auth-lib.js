@@ -85,7 +85,7 @@ class User {
 
 	function createGroup() {
 		var s = makeString();
-		allGroups[s] = ["view site"];
+		allGroups[s] = [];
 		return s;
 	};
 
@@ -143,9 +143,7 @@ class User {
 			}
 			if (i > -1 & obj.groups != "null")
 			{
-				if (obj.groups.length != 0 & obj.groups.indexOf(group) > -1)
-					{ throw new Error("Юзер уже в группе"); return false;}
-				else { 
+				{ 
 					if (Array.isArray(group))
 						group.forEach(function(element){
 							obj.groups.push(element);
@@ -164,7 +162,6 @@ class User {
 	}
 
 	function addUserToGroup(user, group) {
-		try {
 			if (user == null | group == null)
 				throw new Error("Неккоректные входные данные");
 			if (Array.isArray(user)){
@@ -175,9 +172,7 @@ class User {
 			}else {
 				subAddUserToGroup(user, group);
 			}
-		} catch {
-			throw new Error("Ошибка, неккоректные входные данные");
-		}
+		
 	};
 
 	function userGroups(user) {
@@ -296,6 +291,10 @@ class User {
 			}	);
 		} else {
 			if (allRights.indexOf(right) > -1)
+				if (allGroups[group].indexOf(right) > -1){
+					let er = 12;	
+				}
+				else
 				if (allGroups[group].indexOf(right) < 0)
 					allGroups[group].push(right);
 				else throw new Error("Право уже есть");
@@ -306,7 +305,7 @@ class User {
 
 	function removeRightFromGroup(right, group) {
 		let i = allGroups[group].indexOf(right);
-		if (allRights.indexOf(right) > -1 & i > -1)
+		if (i > -1)
 			allGroups[group].splice(i,1);
 		else 
 			throw new Error("Ошибка входных данных");
