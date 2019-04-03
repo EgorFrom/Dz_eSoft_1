@@ -53,7 +53,7 @@ class User {
 				if (e.nickname == username)
 					throw new Error("Пользователь с таким именем уже существует");
 			});
-			var s = allUsers.push(new User(username,pass,["basic"]));
+			let s = allUsers.push(new User(username,pass,["basic"]));
 			return allUsers[s-1];
 		}
 		else {
@@ -66,7 +66,7 @@ class User {
 			throw new Error("Ошибка пользователя");
 		else
 		{
-			var i = allUsers.indexOf(user);
+			let i = allUsers.indexOf(user);
 			if (i > -1)
 				allUsers.splice(i, 1);
 			else 
@@ -80,17 +80,17 @@ class User {
 
 	//создает рандомную строку
 	function makeString() {
-	  var text = "";
-	  var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+	  let text = "";
+	  let possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
-	  for (var i = 0; i < 5; i++)
+	  for (let i = 0; i < 5; i++)
 	    text += possible.charAt(Math.floor(Math.random() * possible.length));
 
 	  return text;
 	}
 
 	function createGroup() {
-		var s = makeString();
+		let s = makeString();
 		allGroups[s] = [];
 		return s;
 	};
@@ -120,22 +120,19 @@ class User {
 				throw new Error("Ошибка группы");
 
 			let flag = false; // if flag==false => user:string, if flag==true => user:object
+			let i = 0;
+			let obj = null;
+
 			if (typeof(user) === "string")
 				flag = false;
 			else 
 				flag = true;
-			var i = 0;
-			var obj = null;
+
 			if (flag){
-				users().forEach(function(u){
-					if (u == user)
-					{
-						obj = u;
-						return;
-					}
-					if (obj != "null") return;
-				});
+				//for user:obj
+				obj = allUsers[allUsers.indexOf(user)];
 			} else {
+				//for user:string
 				users().forEach(function(u){
 					if (u.nickname == user)
 					{
@@ -145,19 +142,15 @@ class User {
 					if (obj != "null") return;
 				});
 			}
-			if (i > -1)
-			{
-				{ 
-					if (Array.isArray(group))
-						group.forEach(function(element){
-							obj.groups.push(element);
-						});
-					else{
-						obj.groups.push(group);
-					}
-					return true;
-				}
-			} 
+
+			if (Array.isArray(group))
+				group.forEach(function(element){
+					obj.groups.push(element);
+				});
+			else{
+				obj.groups.push(group);
+			}
+			return true;
 		}
 	}
 
@@ -176,26 +169,20 @@ class User {
 	};
 
 	function userGroups(user) {
-		if (typeof(user) == "object" & user.groups != "null" & ExistUser(user))
+		if (typeof(user) == "object" & ExistUser(user))
 			return user.groups;
 		else if (typeof(user) == "string") {
-			if (user == "null" | allUsers.length == 0)
-				throw new Error("Ошибка пользователя");
-			else
-			{
-				var obj;
-				users().forEach(function(u){
-					if (u.nickname == user)
-					{
-						obj = u;
-						return;
-					}
-				});
-				if (obj.groups != "null")
+			let obj;
+			users().forEach(function(u){
+				if (u.nickname == user)
 				{
-					return obj.groups;
+					obj = u;
+					return;
 				}
-			}
+				if (obj != "null") return;
+			});
+			if (obj.groups != "null")
+				return obj.groups;
 		}
 	};
 
@@ -204,54 +191,45 @@ class User {
 				throw new Error("Ошибка пользователя");
 			else
 			{
-				let flag = false; // false - string, true - object
 				let obj;
-				try {
-					if (typeof(user) === "string")
-					{
-						users().forEach(function(u){
-							if (u.nickname == user)
-							{
-								obj = u;
-								return;
-							}
-						});
-					} else {
-						users().forEach(function(u){
-							if (u == user)
-							{
-								obj = u;
-								return;
-							}
-						});
-					}
-				} catch {
-					throw new Error("Ошибка введенного пользователя");
+				
+				if (typeof(user) === "string")
+				{
+					//for user:string
+					users().forEach(function(u){
+						if (u.nickname == user)
+						{
+							obj = u;
+							return;
+						}
+					});
+				} else {
+					//for user:obj
+					obj = allUsers[allUsers.indexOf(user)];
 				}
-				if (obj.groups != "null")
-					if (obj.groups.length != 0 & obj.groups.indexOf(group) > -1)
-					{
-						obj.groups.splice(obj.groups.indexOf(group), 1);
-					}
-					else { 
-						throw new Error("Уже удален из группы");
-					}
-				else {
-					throw new Error("Ошибка группы");
+
+				let positionGroup = obj.groups.indexOf(group);
+				if (obj.groups.length != 0 & positionGroup > -1)
+				{
+					obj.groups.splice(positionGroup, 1);
+				}
+				else { 
+					throw new Error("Уже удален из группы");
 				}
 			}
 	};
 
 	function createRight() {
-		var s = makeString();
+		let s = makeString();
 		allRights.push(s);
 		return s;
 	};
 
 	function deleteRight(right) {
-		if (right != 'null' & allRights.indexOf(right) > -1)
+		let positionRight = allRights.indexOf(right);
+		if (right != 'null' & positionRight > -1)
 		{
-			allRights.splice(allRights.indexOf(right), 1);
+			allRights.splice(positionRight, 1);
 			Object.keys(allGroups).forEach(function(group){
 				UpdateGroup(group);
 			})
@@ -261,8 +239,8 @@ class User {
 	};
 
 	function groupRights(group) {
-		var groupRights = [];
-		var keysArrayGroup = Object.keys(allGroups);
+		let groupRights = [];
+		let keysArrayGroup = Object.keys(allGroups);
 		if (keysArrayGroup.indexOf(group) < 0)
 			throw new Error("Ошибка входных данных");
 		else
@@ -283,6 +261,10 @@ class User {
 			right.forEach(function(right)
 			{
 				if (allRights.indexOf(right) > -1)
+					if (allGroups[group].indexOf(right) > -1){
+					//I don't know why, but it is need for test.	
+					} 
+					else
 					if (allGroups[group].indexOf(right) < 0)
 						allGroups[group].push(right);
 					else throw new Error("Право уже есть");
@@ -292,7 +274,7 @@ class User {
 		} else {
 			if (allRights.indexOf(right) > -1)
 				if (allGroups[group].indexOf(right) > -1){
-					let er = 12;	
+					//I don't know why, but it is need for test.	
 				}
 				else
 				if (allGroups[group].indexOf(right) < 0)
@@ -312,10 +294,10 @@ class User {
 	};
 
 	function userRights(user) {
-		var userRights = [];
-		var arrayGroups = userGroups(user);
+		let userRights = [];
+		let arrayGroups = userGroups(user);
 
-		var arrayRights = [];
+		let arrayRights = [];
 		arrayGroups.forEach(function(group){
 			groupRights(group).forEach(function(right){
 				if (userRights.indexOf(right) < 0)
@@ -327,22 +309,22 @@ class User {
 		return userRights;
 	}
 
-	var AuthorizedFlag = false;
-	var CurrentUser = new User();
+	let AuthorizedFlag = false;
+	let CurrentUser = new User();
 
 	function login(username, password) {
-		let flag = false;
+		let resultflag = false;
 		users().forEach(function(user){
-			if (!flag)
+			if (!resultflag)
 				if (user.nickname == username & user.password == password & AuthorizedFlag == false)
 				{
 					CurrentUser = user;
-					flag = true;
+					resultflag = true;
 					AuthorizedFlag = true;
 					return;
-				} else flag = false;
+				} else resultflag = false;
 		});
-		return flag;
+		return resultflag;
 	};
 
 	function currentUser() {
@@ -356,16 +338,12 @@ class User {
 	};
 
 	function isAuthorized(user, right) {
-			try {
-				if (!ExistUser(user) | right == "null" | allRights.indexOf(right) < 0)
-					throw new Error("Ошибка пользователя");
-				else
-				{
-					if (userRights(user).indexOf(right) > -1) 
-						return true;
-					else return false;
-				}
-			} catch{
-				throw new Error("Ошибка входных данных");
-			}
+		if (!ExistUser(user) | right == "null" | allRights.indexOf(right) < 0)
+			throw new Error("Ошибка пользователя");
+		else
+		{
+			if (userRights(user).indexOf(right) > -1) 
+				return true;
+			else return false;
+		}
 	};
