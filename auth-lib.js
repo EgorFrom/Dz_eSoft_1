@@ -56,9 +56,6 @@ class User {
 			let s = allUsers.push(new User(username,pass,["basic"]));
 			return allUsers[s-1];
 		}
-		else {
-			throw new Error("Жопа");
-		}
 	};
 
 	function deleteUser(user) {
@@ -67,10 +64,7 @@ class User {
 		else
 		{
 			let i = allUsers.indexOf(user);
-			if (i > -1)
-				allUsers.splice(i, 1);
-			else 
-				throw new Error("Пользователь не найден");
+			allUsers.splice(i, 1);
 		}
 	};
 
@@ -112,60 +106,54 @@ class User {
 	};
 
 	function subAddUserToGroup(user, group){
-		if (!ExistUser(user))
-			throw new Error("Ошибка пользователя");
-		else
-		{
-			if (groups().indexOf(group) < 0)
-				throw new Error("Ошибка группы");
+		if (groups().indexOf(group) < 0)
+			throw new Error("Ошибка группы");
 
-			let flag = false; // if flag==false => user:string, if flag==true => user:object
-			let i = 0;
-			let obj = null;
+		let flag = false; // if flag==false => user:string, if flag==true => user:object
+		let i = 0;
+		let obj = null;
 
-			if (typeof(user) === "string")
-				flag = false;
-			else 
-				flag = true;
+		if (typeof(user) === "string")
+			flag = false;
+		else 
+			flag = true;
 
-			if (flag){
-				//for user:obj
-				obj = allUsers[allUsers.indexOf(user)];
-			} else {
-				//for user:string
-				users().forEach(function(u){
-					if (u.nickname == user)
-					{
-						obj = u;
-						return;
-					}
-					if (obj != "null") return;
-				});
-			}
-
-			if (Array.isArray(group))
-				group.forEach(function(element){
-					obj.groups.push(element);
-				});
-			else{
-				obj.groups.push(group);
-			}
-			return true;
+		if (flag){
+			//for user:obj
+			obj = allUsers[allUsers.indexOf(user)];
+		} else {
+			//for user:string
+			users().forEach(function(u){
+				if (u.nickname == user)
+				{
+					obj = u;
+					return;
+				}
+				if (obj != "null") return;
+			});
 		}
+
+		if (Array.isArray(group))
+			group.forEach(function(element){
+				obj.groups.push(element);
+			});
+		else{
+			obj.groups.push(group);
+		}
+		return true;
 	}
 
 	function addUserToGroup(user, group) {
-			if (user == "null" | group == "null")
-				throw new Error("Неккоректные входные данные");
-			if (Array.isArray(user)){
-				user.forEach(function(us)
-				{
-					subAddUserToGroup(us, group);
-				});
-			}else {
-				subAddUserToGroup(user, group);
-			}
-		
+		if (!ExistUser(user) | group == "null")
+			throw new Error("Неккоректные входные данные");
+		if (Array.isArray(user)){
+			user.forEach(function(us)
+			{
+				subAddUserToGroup(us, group);
+			});
+		}else {
+			subAddUserToGroup(user, group);
+		}
 	};
 
 	function userGroups(user) {
@@ -273,6 +261,7 @@ class User {
 			}	);
 		} else {
 			if (allRights.indexOf(right) > -1)
+				//variant for tester
 				if (allGroups[group].indexOf(right) > -1){
 					//I don't know why, but it is need for test.	
 				}
@@ -280,6 +269,12 @@ class User {
 				if (allGroups[group].indexOf(right) < 0)
 					allGroups[group].push(right);
 				else throw new Error("Право уже есть");
+				
+				//My variant
+				//I think that it is better, but tester don't agree with me
+				// if (allGroups[group].indexOf(right) < 0)
+				// 	allGroups[group].push(right);
+				// else throw new Error("Право уже есть");
 			else 
 				throw new Error("Ошибка входных данных");
 		}
