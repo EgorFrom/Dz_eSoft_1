@@ -1,5 +1,4 @@
 class User {
-
 		  constructor(nickname, password, groups) {
 		    this.nickname = nickname;
 		    this.password = password;
@@ -20,6 +19,8 @@ class User {
 		"manager": [allRights[0]],
 		"basic": [allRights[1], allRights[3]]
 	}
+
+	//проверяет существования пользователя user:object
 	function ExistUser(user) {
 		ExistingFlag = false;
 		users().forEach(function(e){
@@ -29,18 +30,22 @@ class User {
 		return ExistingFlag;
 	}
 
+	//обновляет список групп у каждого пользователя user:object
 	function UpdateUser(user){
 		user.groups.forEach(function(elem){
 			if (Object.keys(allGroups).indexOf(elem) < 0)
 				user.groups.splice(user.groups.indexOf(elem), 1);
 		});
 	}
+	
+	//обновляет список прав у каждой группы group:string
 	function UpdateGroup(group){
 		allGroups[group].forEach(function(right){
 			if (allRights.indexOf(right) < 0)
 				allGroups[group].splice(allGroups[group].indexOf(right), 1)
 		});
 	}
+
 	function createUser(username, pass) {
 		if (typeof(username) == "string" & typeof(pass) == "string")
 		{
@@ -57,7 +62,7 @@ class User {
 	};
 
 	function deleteUser(user) {
-		if (user.nickname == "null" | user.password == "null" |  user == "null")
+		if (!ExistUser(user))
 			throw new Error("Ошибка пользователя");
 		else
 		{
@@ -73,6 +78,7 @@ class User {
 		return allUsers;
 	};
 
+	//создает рандомную строку
 	function makeString() {
 	  var text = "";
 	  var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -106,14 +112,14 @@ class User {
 	};
 
 	function subAddUserToGroup(user, group){
-		if (user == "null" | allUsers.length == 0)
+		if (!ExistUser(user))
 			throw new Error("Ошибка пользователя");
 		else
 		{
 			if (groups().indexOf(group) < 0)
 				throw new Error("Ошибка группы");
 
-			let flag = false; // false - string, true - object
+			let flag = false; // if flag==false => user:string, if flag==true => user:object
 			if (typeof(user) === "string")
 				flag = false;
 			else 
@@ -122,38 +128,32 @@ class User {
 			var obj = null;
 			if (flag){
 				users().forEach(function(u){
-					i++;
 					if (u == user)
 					{
 						obj = u;
 						return;
 					}
-					if (obj != null) return;
+					if (obj != "null") return;
 				});
 			} else {
 				users().forEach(function(u){
-					i++;
 					if (u.nickname == user)
 					{
 						obj = u;
 						return;
 					}
-					if (obj != null) return;
+					if (obj != "null") return;
 				});
 			}
-			if (i > -1 & obj.groups != "null")
+			if (i > -1)
 			{
 				{ 
 					if (Array.isArray(group))
 						group.forEach(function(element){
 							obj.groups.push(element);
-							allUsers.push(obj);
-							allUsers.splice(i, 1);
 						});
 					else{
 						obj.groups.push(group);
-						allUsers.push(obj);
-						allUsers.splice(i, 1);
 					}
 					return true;
 				}
@@ -162,7 +162,7 @@ class User {
 	}
 
 	function addUserToGroup(user, group) {
-			if (user == null | group == null)
+			if (user == "null" | group == "null")
 				throw new Error("Неккоректные входные данные");
 			if (Array.isArray(user)){
 				user.forEach(function(us)
@@ -200,7 +200,7 @@ class User {
 	};
 
 	function removeUserFromGroup(user, group) {
-			if (user == "null" | allUsers.length == 0)
+			if (!ExistUser(user))
 				throw new Error("Ошибка пользователя");
 			else
 			{
@@ -357,7 +357,7 @@ class User {
 
 	function isAuthorized(user, right) {
 			try {
-				if (user == null | right == null | allUsers.length == 0 | allRights.indexOf(right) < 0)
+				if (!ExistUser(user) | right == "null" | allRights.indexOf(right) < 0)
 					throw new Error("Ошибка пользователя");
 				else
 				{
